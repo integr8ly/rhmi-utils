@@ -1,5 +1,4 @@
 #!/bin/bash
-#set -euo pipefail
 
 tmpdir=$(mktemp -d -p .)
 svr=$(oc whoami --show-server | sed -e "s/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/")
