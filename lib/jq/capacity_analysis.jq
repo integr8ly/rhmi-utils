@@ -1,3 +1,51 @@
+def pow(n):
+  if n == 0 then 1
+  elif . == 0 then 0
+  else ( (n | floor) == n) as $intp
+       | ( (n % 2) | if . == 0 then 1 else -1 end ) as $sign
+       | if . == -1 and $intp then $sign
+         elif . < 0 then -(.) | pow(n) * $sign
+         elif $intp and n > 0 then . * pow(n - 1)
+         else log * n | exp
+         end
+  end;
+
+def mem_to_bytes(v):
+  if (v | type != "string") then v else
+  v
+  | capture("(?<n>[0-9]+)(?<u>[A-Z])(?<i>i|)") as $in
+  | (if ($in.i=="i") then 1024 else 1000 end) as $mod
+  | (("BKMGTPEZY" | index($in.u))) as $power
+  | (($mod | pow($power)) * ($in.n | tonumber))
+  end;
+
+def sum(s): reduce s as $x (null; . + $x ); 
+
+def cpu_to_mcores($v):
+  if (v | type != "string") then v else
+    if (v | endswith("m")) then
+      (v[:-1]|tonumber) 
+    else 
+      (((v|tonumber)*1000))
+    end
+  end; 
+
+def normalize_cpu(v):
+  if (v == "0") then 0 else
+  if (v | type != "string") then v else
+    if (v | endswith("m")) then
+      (v[:-1]|tonumber)/1000
+    else
+      (v|tonumber)
+    end
+  end
+  end;
+
+
+
+def roundit: .*100.0 + 0.5|floor/100.0;
+
+
   [[.[] | {"key": .id, "value": (.result.items? // .result)}] | from_entries | . as {pods: $pods, volumes: $vols, "pod-metrics": $podMetrics, nodes: $nodes} |
   (
     $nodes[] | select(.metadata.labels.type == "compute") | 
