@@ -1,3 +1,5 @@
+import "modules/i8-helpers" as i8;
+
 [[.[] | {"key": .id, "value": .result}] | from_entries | .pods.items[] | select(.status.phase=="Running")] | {
     num_containers: sum(.[].spec.containers | length), 
     num_pods: length,
