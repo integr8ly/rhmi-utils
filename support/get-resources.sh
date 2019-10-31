@@ -32,13 +32,18 @@ cat << EOF > ${work_file}
       "type": "json"
     },
     {
+      "id": "namespaces",
+      "cmd": "oc get ns -o json",
+      "type": "json"
+    },
+    {
       "id": "pods",
       "cmd": "oc get pod --all-namespaces -o json",
       "type": "json"
     },
     {
       "id": "nodes",
-      "cmd": "oc get --raw '/api/v1/nodes' | jq '. | delpaths([path(.items[].status[\"conditions\",\"images\"])])'",
+      "cmd": "oc get --raw '/api/v1/nodes'",
       "type": "json"
     },
     {
@@ -70,6 +75,16 @@ cat << EOF > ${work_file}
       "id": "enmasse-crs",
       "cmd": "(oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}' | grep -v addressspaceschema) | sed 's/ /,/g') --all-namespaces  -o json; oc get addressspaceschemas -o json) | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
       "type": "json"
+    },
+    {
+      "id": "routes",
+      "cmd": "oc get routes --all-namespaces -o json",
+      "type": "json"
+    },
+    {
+      "id": "services",
+      "cmd": "oc get services --all-namespaces -o json",
+      "type": "json"
     }
   ]
 
@@ -85,7 +100,7 @@ for i in ${tmpdir}/*.json; do
   cat ${work_file} | jq --arg id $(basename $i .json) --slurpfile x $i '[.[] | select(.id==$id).result=$x[]]' > $work_file.tmp && cp $work_file.tmp ${work_file} && rm $work_file.tmp
 done
 
-rm -r ${tmpdir}
+#rm -r ${tmpdir}
 
 gzip ${work_file} --suffix=.gz
 
