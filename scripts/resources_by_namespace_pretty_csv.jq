@@ -1,4 +1,4 @@
-import "i8-helpers" as i8 {"search": ["~/.rhmi/utils/lib/jq","~/repos/rhmi-utils/lib/jq"]};
+import "i8-helpers" as i8 {"search": ["../lib/jq"]};
 
 def getPodResources:
   [.pods[] | {
@@ -41,6 +41,3 @@ map({
   cpu_lim: [.[].limits?.cpu] | add | (if . then .|i8::roundit else . end),
   mem_lim: [.[].limits?.memory] | add | i8::prettyBytes
 }) | (.[0] | to_entries | map(.key)), (.[] | [.[]]) | @csv
-#  |= [ ["x","y","z"] ] + . |
-# @csv
-

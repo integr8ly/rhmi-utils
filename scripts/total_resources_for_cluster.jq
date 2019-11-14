@@ -1,4 +1,4 @@
-import "i8-helpers" as i8 {"search": ["~/.rhmi/utils/lib/jq","~/repos/rhmi-utils/lib/jq"]};
+import "i8-helpers" as i8 {"search": ["../lib/jq"]};
 
 [[.[] | {"key": .id, "value": .result}] | from_entries | .pods.items[] | select(.status.phase=="Running")] | {
     num_containers: i8::sum(.[].spec.containers | length), 
