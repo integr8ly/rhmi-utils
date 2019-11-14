@@ -1,4 +1,4 @@
-import "i8-helpers" as i8 {"search": ["~/.rhmi/utils/lib/jq","~/repos/rhmi-utils/lib/jq"]};
+import "i8-helpers" as i8 {"search": ["../lib/jq"]};
 
 def getPodResources:
   [
