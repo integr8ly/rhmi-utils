@@ -40,5 +40,7 @@ map({
   mem_req: [.[].requests?.memory] | add | i8::prettyBytes,
   cpu_lim: [.[].limits?.cpu] | add | (if . then .|i8::roundit else . end),
   mem_lim: [.[].limits?.memory] | add | i8::prettyBytes
-}) | .[] | to_entries | [.[].value] | @csv
+}) | (.[0] | to_entries | map(.key)), (.[] | [.[]]) | @csv
+#  |= [ ["x","y","z"] ] + . |
+# @csv
 
