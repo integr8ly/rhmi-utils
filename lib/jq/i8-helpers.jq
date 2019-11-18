@@ -26,7 +26,7 @@ def pow(n):
 
 def mem_to_bytes(v):
   if (v | type != "string") then v else
-    v | capture("(?<n>[0-9]+)(?<u>[A-Z])(?<i>i|)") as $in
+    v | capture("(?<n>([0-9]|\\.)+)(?<u>[A-Z])(?<i>i|)") as $in
     | (if ($in.i=="i") then 1024 else 1000 end) as $mod
     | (("BKMGTPEZY" | index($in.u))) as $power
     | (($mod | pow($power)) * ($in.n | tonumber))
@@ -69,7 +69,7 @@ def prettyBytes:
   if type=="number" and .>1000 then (
     [while(.>1; ./1000)] | [
       (last*100.0|round|./100.0),
-      ("BKMGTPEZY"|split(""))[length]
+      ("BKMGTPEZY"|split(""))[length-1]
     ] | join(" "))
   else . end;
 
