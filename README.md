@@ -1,8 +1,8 @@
 # rhmi-utils
 
-## Getting started
+# Getting started
 
-To get started using any of the provided analysis scripts, simply clone the repo to your local machine and 
+To get started using any of the provided analysis scripts and/or , simply clone the repo to your local machine
 ```
 $ git clone https://github.com/integr8ly/rhmi-utils.git
 Cloning into 'rhmi-utils'...
@@ -12,19 +12,29 @@ remote: Compressing objects: 100% (64/64), done.
 remote: Total 101 (delta 28), reused 81 (delta 22), pack-reused 0
 Receiving objects: 100% (101/101), 26.23 KiB | 26.23 MiB/s, done.
 Resolving deltas: 100% (28/28), done.
+```
 
-$ cd rhmi-utils/
+Loading the i8-helper functions is as simple as sourcing ./bin/i8-helpers.sh
+```
+source </path/to>/rhmi-utils/bin/i8-helpers.sh
+```
+Its recommended to add this to your .bashrc so that the i8-* functions are always available in new terminals.
 
+## Getting started - analyzing resource data
+
+The analysis scripts are intended to be run against a resource snapshot file created by the get-resources.sh script (see below).  Once you have a resource snapshot file to use, you can use the provided scripts to extract specific pieces of data like so:
+
+```
 $ zcat ~/work/api.resources.xyz.json.gz | jq -f scripts/<scipt_name>.jq
 ```
 
-### Creating a resource snapshot file from an OCP cluster
+## Creating a resource snapshot file from an OCP cluster
 
 The get-resources script is designed to be runnable on any machine where oc is installed and logged in as a user with sufficient rights.
 
 ```
 # Run locally from cloned repo
-$ ~/repos/rhmi-utils/support/get-resources.sh 
+$ ~/repos/rhmi-utils/support/get-resources.sh
 Data for api.xyz.openshift.com has been extracted to resources.api.xyz.openshift.com.20191210_193053Z.json.gz
 
 # Run from a master node logged in as system:admin using the latest version without git, scp, etc.
@@ -39,7 +49,7 @@ Saving snapshots before and after making a change, performing an upgrade, etc., 
 ### Extracting/Reducing data from a get-resources snapshot file
 The most commonly used script is resources_by_namespace.jq which consolidates resource requests/limits from pod specs, storage usage from pvcs and actual cpu/mem usage from pod metrics into totals per namespace.
 
-Using a script is as easy as 
+Using a script is as easy as
 ```
 $ zcat </path/to/get-resources/snapshot/file>.json.gz | jq -f scripts/<scipt_name>.jq
 [
