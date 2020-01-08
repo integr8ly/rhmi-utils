@@ -73,7 +73,7 @@ cat << EOF > ${work_file}
     },
     {
       "id": "enmasse-crs",
-      "cmd": "(oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}' | grep -v addressspaceschema) | sed 's/ /,/g') --all-namespaces  -o json; oc get addressspaceschemas -o json) | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
+      "cmd": "(oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}' | egrep -v '^(addressspaceschemas|addresses)$') | sed 's/ /,/g') --all-namespaces  -o json; oc get addressspaceschemas -o json) | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
       "type": "json"
     },
     {
