@@ -1,8 +1,8 @@
 #!/bin/bash
 
-tmpdir=$(mktemp -d -p .)
-svr=$(oc whoami --show-server | sed -e "s/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/")
-work_file=resources.${svr}.$(date --utc +%Y%m%d_%H%M%SZ).json
+tmpdir=$(mktemp -d)
+svr=$(oc whoami --show-server | sed -e 's|^[^/]*//||' -e 's|/.*$||' | cut -d':' -f1)
+work_file=${tmpdir}/resources.${svr}.$(TZ=UTC date +%Y%m%d_%H%M%SZ).json
 
 cat << EOF > ${work_file}
 [
@@ -23,7 +23,7 @@ cat << EOF > ${work_file}
     },
     {
       "id": "release",
-      "cmd": "oc get secret manifest -n $(oc get ns | egrep '^(openshift-|)webapp' | awk '{print $1}') -o template='{{(.data.generated_manifest | base64decode) }}' | jq '.version' -r",
+      "cmd": "oc get secret manifest -n $(oc get ns --no-headers | awk '{print $1}' | egrep '^(openshift-|redhat-rhmi-){0,1}(webapp|solution-explorer)$' | awk '{print $1}') -o template='{{(.data.generated_manifest | base64decode) }}' | jq '.version' -r",
       "type": "raw"
     },
     {
@@ -58,7 +58,7 @@ cat << EOF > ${work_file}
     },
     {
       "id": "apps",
-      "cmd": "oc get $(oc api-resources --api-group=apps --no-headers | awk '{print $1}' | paste -d, -s) --all-namespaces -o json",
+      "cmd": "oc get $(echo $(oc api-resources --api-group=apps --no-headers | awk '{print $1}') | sed 's/ /,/g' | awk '{print $1",replicationcontrollers"}') --all-namespaces -o json",
       "type": "json"
     },
     {
@@ -69,11 +69,6 @@ cat << EOF > ${work_file}
     {
       "id": "volumes",
       "cmd": "oc get pv,pvc --all-namespaces -o json",
-      "type": "json"
-    },
-    {
-      "id": "enmasse-crs",
-      "cmd": "(oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}' | egrep -v '^(addressspaceschemas|addresses)$') | sed 's/ /,/g') --all-namespaces  -o json; oc get addressspaceschemas -o json) | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
       "type": "json"
     },
     {
@@ -90,7 +85,7 @@ cat << EOF > ${work_file}
 
 EOF
 
-source <(cat ${work_file} | jq --arg dir $tmpdir '.[] | "\(.cmd) > \($dir)/\(.id).\(.type)"' -r)
+cat ${work_file} | jq --arg dir $tmpdir '.[] | "\(.cmd) > \($dir)/\(.id).\(.type)"' -r | bash
 
 for i in ${tmpdir}/*.raw; do
   cat ${work_file} | jq --arg id $(basename $i .raw) --arg x $(cat $i) '[.[] | select(.id==$id).result=$x]' > $work_file.tmp && cp $work_file.tmp ${work_file} && rm $work_file.tmp
