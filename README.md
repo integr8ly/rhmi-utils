@@ -80,19 +80,19 @@ $ zcat </path/to/get-resources/snapshot/file>.json.gz | jq -f scripts/<scipt_nam
 ```
 
 ### Creating custom scripts
-Its highly recommended to use one of the existing core scripts as a starting point and adapting it for your needs instead of starting from scratch.  While jq is very powerful, its easy to make a mistake and end up with a cartision product between two sets of data when you think you're getting a one-to-one or one-to-many (especially when you're working with such a large amount of input with varying schemas.
+Its highly recommended to use one of the existing core scripts as a starting point and adapting it for your needs instead of starting from scratch.  While jq is very powerful, its easy to make a mistake and end up with a cartision product between two sets of data when you think you're getting a one-to-one or one-to-many (especially when you're working with such a large amount of input with varying schemas).
 
-**PRO TIP:** If you find yourself tempted to run send your output thru a unique filter to get rid of duplicate rows that you didn't expect, theres a good chance that you're dealing with a accidental cartision product.
+**PRO TIP:** If you find yourself tempted to pipe your output thru a unique filter to get rid of duplicate rows that you didn't expect, theres a good chance that you're dealing with an accidental cartision product.
 
 The resources_by_namespace.jq script is a great starting point to use as it demonstrates several techniques:
-# using common functions from the i8-helpers module for jq (/lib/jq/i8-helpers.jq)
-# breaking up logic into functions
-# joining pieces of data from multiple query results
-# reshaping data with different schemas
-# using normalizeResources/mem_to_bytes from the i8-helpers module to convert memory values from base 2 and 10 units into bytes so that they can be aggregated
+- using common functions from the i8-helpers module for jq (/lib/jq/i8-helpers.jq)
+- breaking up logic into functions
+- joining pieces of data from multiple query results
+- reshaping data with different schemas
+- using normalizeResources/mem_to_bytes from the i8-helpers module to convert memory values from base 2 and 10 units into bytes so that they can be aggregated
 The totals from resources_by_namespace are intentionally left raw/unformatted so that the output can be piped into another jq script or other external tools to do additional calculations.
 
-The resources_by_namespace_pretty_csv.jq script includes the same base logic from resources_by_namespace.js; however, its focus is to demonstrate how to turn the raw numbers into human-friendly  form using prettyBytes from the i8-helpers module.  When using this script, you'll likely want to include -r (--raw-output) to avoid the double escaping/quotes.
+The resources_by_namespace_pretty_csv.jq script includes the same base logic from resources_by_namespace.js; however, its focus is to demonstrate how to turn the raw numbers into human-friendly form using prettyBytes from the i8-helpers module.  When using this script, you'll likely want to include -r (--raw-output) to avoid the double escaping/quotes.
 ```
 $ zcat ~/repos/rhmi-utils/samples/xyz.json.gz | jq -f scripts/resources_by_namespace_pretty_csv.jq -r
 "ns","cpu_real","mem_real","cpu_req","mem_req","cpu_lim","mem_lim"
