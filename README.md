@@ -79,6 +79,19 @@ $ zcat </path/to/get-resources/snapshot/file>.json.gz | jq -f scripts/<scipt_nam
 ]
 ```
 
+#### Extracting RHMI cluster resource data and container resource usage
+**Note:** Ensure you already have a resource snapshot file
+
+1. Run `zcat </path/to/get-resources/snapshot/file>.json.gz | jq -f ./scripts/rhmi_resources_by_container_pretty_csv.jq -r > containerresources.csv`
+2. Run `zcat </path/to/get-resources/snapshot/file>.json.gz | jq -f ./scripts/resources_by_namespace_csv.jq -r > namespaceresources.csv`
+3. Open https://docs.google.com/spreadsheets/d/1U_Xigy6ffsgv6ifgDNsJPIuv8NS_kEkb6muc6dZWd-0 or another Google Sheet
+4. Import the above csv files into individual tabs
+5. *Manual Step:* Namespace sheet: Copy the Cluster totals and RHMI totals rows from the above spreadsheet
+    * **Note:** Make sure the RHMI totals cells formula only target RHMI namespaces rows in the sheet.
+6. *Manual Step:* Container sheet: Merge storage cells beside each other which have the same workload name and the same storage value
+7. Colour code the rows using `Format > Alternating Colours` in Google Sheets
+
+
 ### Creating custom scripts
 Its highly recommended to use one of the existing core scripts as a starting point and adapting it for your needs instead of starting from scratch.  While jq is very powerful, its easy to make a mistake and end up with a cartision product between two sets of data when you think you're getting a one-to-one or one-to-many (especially when you're working with such a large amount of input with varying schemas).
 

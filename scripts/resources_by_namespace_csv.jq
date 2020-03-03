@@ -41,12 +41,12 @@ getPVCs as $pvcs |
 [i8::leftJoin($pods; $usages; "\(.ns) \(.pod) \(.container)")] |
 group_by(.ns) |
 map({
-  ns: .[0].ns,
-  cpu_real: [.[].usage.cpu] | add | (if . then .|i8::roundit else . end),
-  mem_real: [.[].usage.memory] | add | i8::prettyBytes,
-  cpu_req: [.[].requests?.cpu] | add | (if . then .|i8::roundit else . end),
-  mem_req: [.[].requests?.memory] | add | i8::prettyBytes,
-  cpu_lim: [.[].limits?.cpu] | add | (if . then .|i8::roundit else . end),
-  mem_lim: [.[].limits?.memory] | add | i8::prettyBytes,
-  storage: [.[0].ns as $ns | $pvcs[] | select(.ns==$ns) | .storage ] | add | i8::prettyBytes
+  Namespace: .[0].ns,
+  "CPU - Real": [.[].usage.cpu] | add | (if . then .|i8::roundit else . end),
+  "CPU - Requested": [.[].requests?.cpu] | add | (if . then .|i8::roundit else . end),
+  "CPU - Limit": [.[].limits?.cpu] | add | (if . then .|i8::roundit else . end),
+  "Memory - Real": [.[].usage.memory] | add,
+  "Memory - Requested": [.[].requests?.memory] | add,
+  "Memory - Limit": [.[].limits?.memory] | add,
+  "Storage": [.[0].ns as $ns | $pvcs[] | select(.ns==$ns) | .storage ] | add
 }) | (.[0] | to_entries | map(.key)), (.[] | [.[]]) | @csv
