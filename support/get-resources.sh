@@ -23,7 +23,7 @@ cat << EOF > ${work_file}
     },
     {
       "id": "release",
-      "cmd": "oc get secret manifest -n $(oc get ns --no-headers | awk '{print $1}' | egrep '^(openshift-|redhat-rhmi-){0,1}(webapp|solution-explorer)$' | awk '{print $1}') -o template='{{(.data.generated_manifest | base64decode) }}' | jq '.version' -r",
+      "cmd": "ns=$(oc get ns --no-headers | awk '{print $1}' | egrep '^((openshift-)?webapp|redhat-rhmi-solution-explorer)$'); (   if [[ \$ns == redhat-rhmi-solution-explorer ]]; then     oc get dc/tutorial-web-app -n \$ns -o json | jq '.spec.template.spec.containers[].env[] | select(.name == \"INTEGREATLY_VERSION\").value' -r;   else      oc get secret manifest -n \$ns -o template='{{(.data.generated_manifest | base64decode) }}' 2> /dev/null | jq '.version' -r;   fi; )",
       "type": "raw"
     },
     {
@@ -72,6 +72,11 @@ cat << EOF > ${work_file}
       "type": "json"
     },
     {
+      "id": "enmasse-crs",
+      "cmd": "(oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}' | egrep -v '^(addressspaceschemas|addresses)$') | sed 's/ /,/g') --all-namespaces  -o json; oc get addressspaceschemas -o json) | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
+      "type": "json"
+    },
+    {
       "id": "routes",
       "cmd": "oc get routes --all-namespaces -o json",
       "type": "json"
@@ -82,7 +87,6 @@ cat << EOF > ${work_file}
       "type": "json"
     }
   ]
-
 EOF
 
 cat ${work_file} | jq --arg dir $tmpdir '.[] | "\(.cmd) > \($dir)/\(.id).\(.type)"' -r | bash

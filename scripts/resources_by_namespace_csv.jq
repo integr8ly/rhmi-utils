@@ -33,7 +33,6 @@ def getPVCs:
     claim: .metadata.name,
     storage: i8::mem_to_bytes(.status.capacity.storage)
   });
-  # | INDEX(.[]; "\(.ns) \(.claim)");
 
 i8::process |
 getPodResources as $pods |

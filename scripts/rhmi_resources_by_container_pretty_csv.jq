@@ -6,9 +6,11 @@ def getPodResources:
     {
       ns: .metadata.namespace,
       pod: .metadata.name,
-      ownerReferenceUid: .metadata.ownerReferences[0].uid,
+      # NOTE: This ends up not including any pods without a parent
+      ownerReferenceUid: .metadata.ownerReferences[]? | select(.controller == true).uid,
       containers: .spec.containers[],
-      claims: [.spec.volumes[].persistentVolumeClaim.claimName? // empty]
+      claims: [.spec.volumes[].persistentVolumeClaim.claimName? // empty],
+      phase: .status.phase
     } | {
       ns,
       pod,
@@ -16,7 +18,8 @@ def getPodResources:
       requests: .containers.resources.requests | i8::normalizeResources,
       limits: .containers.resources.limits | i8::normalizeResources,
       claims,
-      ownerReferenceUid
+      ownerReferenceUid,
+      phase
     }
   ];
 
@@ -45,14 +48,14 @@ def getApps:
       elif .kind == "DaemonSet" then
         .kind
       else
-        .metadata.ownerReferences[0].kind
+        .metadata.ownerReferences[]? | select(.controller == true).kind
       end),
       workloadName: (if .kind == "StatefulSet" then
         .metadata.name
       elif .kind == "DaemonSet" then
         .metadata.name
       else
-        .metadata.ownerReferences[0].name
+        .metadata.ownerReferences[]? | select(.controller == true).name
       end),
       workloadReplicas: .spec.replicas
     }
@@ -73,13 +76,12 @@ getPodUsages as $usages |
 getApps as $apps |
 getPVCs as $pvcs |
 [i8::leftJoin($pods; $usages; "\(.ns) \(.pod) \(.container)")] |
-map(select(.container != "deployment")) |
-map(select(.container != "lifecycle")) |
-map({
+map(select(.phase == "Running")) |
+map((.ownerReferenceUid as $ownerReferenceUid | $apps[] | select(.uid == $ownerReferenceUid)) as $workload | {
   "Namespace": .ns,
-  "Workload Kind": (.ownerReferenceUid as $ownerReferenceUid | $apps[] | select(.uid == $ownerReferenceUid).workloadKind),
-  "Workload Name": (.ownerReferenceUid as $ownerReferenceUid | $apps[] | select(.uid == $ownerReferenceUid).workloadName),
-  "Workload Replicas": (.ownerReferenceUid as $ownerReferenceUid | $apps[] | select(.uid == $ownerReferenceUid).workloadReplicas),
+  "Workload Kind": $workload.workloadKind,
+  "Workload Name": $workload.workloadName,
+  "Workload Replicas": $workload.workloadReplicas,
   "Container Name": .container,
   "CPU - Real": .usage.cpu | (if . then .|i8::roundit else . end),
   "CPU - Requested": .requests?.cpu | (if . then .|i8::roundit else . end),
