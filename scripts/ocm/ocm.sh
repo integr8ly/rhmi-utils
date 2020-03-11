@@ -20,6 +20,9 @@ readonly ERROR_MISSING_AWS_ENV_VARS="ERROR: Not all required AWS environment are
 readonly ERROR_MISSING_AWS_JSON="ERROR: ${AWS_CREDENTIALS_FILE} file does not exist. Please run 'make ocm/aws/create_access_key' first"
 readonly ERROR_MISSING_CLUSTER_JSON="ERROR: ${CLUSTER_CONFIGURATION_FILE} file does not exist. Please run 'make ocm/cluster.json' first"
 readonly ERROR_UPGRADE_VERSION_REQUIRED="ERROR: UPGRADE_VERSION variable is not exported. Please specify OpenShift version"
+readonly PROMPT_ACCESS_KEY_LIMIT="WARNING
+Number of access keys for user osdCcsAdmin has reached its limit (2).
+Do you want to delete latest generated key and create a new one? "
 
 create_access_key() {
     if [[ -z "${AWS_ACCOUNT_ID:-}" || -z "${AWS_SECRET_ACCESS_KEY:-}" || -z "${AWS_ACCESS_KEY_ID:-}" ]]; then
@@ -28,6 +31,28 @@ create_access_key() {
         printf "AWS_ACCESS_KEY_ID='%s'\n" "${AWS_ACCESS_KEY_ID:-}"
         printf "AWS_SECRET_ACCESS_KEY='%s'\n" "${AWS_SECRET_ACCESS_KEY:-}"
         exit 1
+    fi
+
+    local available_access_keys
+    local number_of_access_keys_present
+    local latest_generated_access_key
+    local latest_generated_access_key_id
+
+    available_access_keys=$(aws iam list-access-keys --user-name osdCcsAdmin | jq -r '.AccessKeyMetadata')
+    number_of_access_keys_present=$(jq length <<< "${available_access_keys}")
+
+    if [[ "${number_of_access_keys_present}" = 2 ]]; then
+        read -rp "${PROMPT_ACCESS_KEY_LIMIT}" user_input
+        if [[ "${user_input}" = "y" ]]; then
+            latest_generated_access_key=$(jq .[0] <<< "${available_access_keys}")
+            latest_generated_access_key_id=$(jq -r .AccessKeyId <<< "${latest_generated_access_key}")
+
+            printf "Deleting following access key:\n%s\n" "${latest_generated_access_key}"
+            aws iam delete-access-key --user-name osdCcsAdmin --access-key-id "${latest_generated_access_key_id}"
+        else
+            printf 'Access key was not generated.\n'
+            exit 1
+        fi
     fi
     aws iam create-access-key --user-name osdCcsAdmin | jq -r .AccessKey | tee "${AWS_CREDENTIALS_FILE}"
 }
@@ -283,7 +308,7 @@ main() {
             exit 0
             ;;
         -*)
-            echo "Error: Unknown option: $1" >&2
+            echo "Error: Unknown option: ${1}" >&2
             exit 1
             ;;
         *)
