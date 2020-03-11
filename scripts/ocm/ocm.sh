@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+readonly REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 readonly OCM_DIR="${REPO_DIR}/ocm"
 
 readonly AWS_CREDENTIALS_FILE="${OCM_DIR}/aws.json"
