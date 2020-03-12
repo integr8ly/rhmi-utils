@@ -69,7 +69,7 @@ create_cluster_configuration_file() {
     timestamp=$(get_expiration_timestamp "${OCM_CLUSTER_LIFESPAN}")
 
     jq ".expiration_timestamp = \"${timestamp}\" | .name = \"${OCM_CLUSTER_NAME}\" | .region.id = \"${OCM_CLUSTER_REGION}\"" \
-        < "${REPO_DIR}/templates/ocm-cluster/cluster-template.json" \
+        < "${REPO_DIR}/templates/ocm/cluster-template.json" \
         > "${CLUSTER_CONFIGURATION_FILE}"
 	
     if [ "${BYOC}" = true ]; then
