@@ -186,7 +186,7 @@ If you want to test your changes on a cluster, the easiest solution would be to 
 
 #### Steps
 
-1. Download the CLI tool and add it to your PATH
+1. Download the OCM CLI tool and add it to your PATH
 2. Export [OCM_TOKEN](https://github.com/openshift-online/ocm-cli#log-in): `export OCM_TOKEN="<TOKEN_VALUE>"`
 3. Login via OCM: 
 ```
