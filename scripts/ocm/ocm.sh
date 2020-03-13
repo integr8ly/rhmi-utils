@@ -22,7 +22,7 @@ readonly ERROR_MISSING_CLUSTER_JSON="ERROR: ${CLUSTER_CONFIGURATION_FILE} file d
 readonly ERROR_UPGRADE_VERSION_REQUIRED="ERROR: UPGRADE_VERSION variable is not exported. Please specify OpenShift version"
 readonly PROMPT_ACCESS_KEY_LIMIT="WARNING
 Number of access keys for user osdCcsAdmin has reached its limit (2).
-Do you want to delete latest generated key and create a new one? "
+Do you want to delete latest generated key and create a new one? (y/n): "
 
 create_access_key() {
     if [[ -z "${AWS_ACCOUNT_ID:-}" || -z "${AWS_SECRET_ACCESS_KEY:-}" || -z "${AWS_ACCESS_KEY_ID:-}" ]]; then
@@ -35,7 +35,6 @@ create_access_key() {
 
     local available_access_keys
     local number_of_access_keys_present
-    local latest_generated_access_key
     local latest_generated_access_key_id
 
     available_access_keys=$(aws iam list-access-keys --user-name osdCcsAdmin | jq -r '.AccessKeyMetadata')
@@ -44,17 +43,28 @@ create_access_key() {
     if [[ "${number_of_access_keys_present}" = 2 ]]; then
         read -rp "${PROMPT_ACCESS_KEY_LIMIT}" user_input
         if [[ "${user_input}" = "y" ]]; then
-            latest_generated_access_key=$(jq .[0] <<< "${available_access_keys}")
-            latest_generated_access_key_id=$(jq -r .AccessKeyId <<< "${latest_generated_access_key}")
-
-            printf "Deleting following access key:\n%s\n" "${latest_generated_access_key}"
+            latest_generated_access_key_id=$(get_latest_generated_access_key_id "${available_access_keys}")
+            printf "Deleting following access key id: %s\n" "${latest_generated_access_key_id}"
             aws iam delete-access-key --user-name osdCcsAdmin --access-key-id "${latest_generated_access_key_id}"
         else
             printf 'Access key was not generated.\n'
             exit 1
         fi
     fi
+    printf "Generating new access key:\n"
     aws iam create-access-key --user-name osdCcsAdmin | jq -r .AccessKey | tee "${AWS_CREDENTIALS_FILE}"
+}
+
+get_latest_generated_access_key_id() {
+    local access_keys="${1}"
+    firstAccessKeyDateAndId="$(jq -r .[0].CreateDate <<< "${access_keys}")|$(jq -r .[0].AccessKeyId <<< "${access_keys}")"
+    secondAccessKeyDateAndId="$(jq -r .[1].CreateDate <<< "${access_keys}")|$(jq -r .[1].AccessKeyId <<< "${access_keys}")"
+    # Compare "CreateDate" and return newer "AccessKeyId" (the latest generated one)
+    if [[ "${firstAccessKeyDateAndId%|*}" > "${secondAccessKeyDateAndId%|*}" ]]; then
+        printf "%s" "${firstAccessKeyDateAndId#*|}"
+    else
+        printf "%s" "${secondAccessKeyDateAndId#*|}"
+    fi
 }
 
 create_cluster_configuration_file() {
