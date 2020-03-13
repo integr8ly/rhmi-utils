@@ -10,8 +10,8 @@ Base image used on CI for all builds and test jobs. See [here](https://github.co
 $ docker build -t registry.svc.ci.openshift.org/integr8ly/rhmi-utils-base-image:latest - < Dockerfile.tools
 $ IMAGE_NAME=registry.svc.ci.openshift.org/integr8ly/rhmi-utils-base-image:latest test/run
 ShellCheck - shell script analysis tool
-version: 0.3.8
+version: 0.7.0
 license: GNU General Public License, version 3
-website: http://www.shellcheck.net
+website: https://www.shellcheck.net
 SUCCESS!
 ```
