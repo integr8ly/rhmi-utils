@@ -1,0 +1,4 @@
+FROM registry.svc.ci.openshift.org/openshift/release:golang-1.13
+
+# Install shellcheck: https://github.com/koalaman/shellcheck
+RUN yum -y install ShellCheck
