@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#test2
+#test3
 
 set -o errexit
 set -o nounset
