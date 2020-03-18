@@ -358,7 +358,7 @@ async function monitorDowntimePerNs() {
 Get all namespaces starting with the specified (or default) namespace prefix
 */
 async function getProjects() {
-  console.log("Getting initial list of RHMI comopnents");
+  console.log("Getting initial list of RHMI components");
   projects = [];
   const ocResponse = await exec(`oc get projects -o json | jq '.items[] | select(.metadata.name | startswith(\"${NAMESPACE_PREFIX}\")) |.metadata.name'`); // TODO remove 3scale
   let projectNames = ocResponse.stdout.split(/\r?\n/).filter(e => e !== '');
