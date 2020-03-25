@@ -113,6 +113,8 @@ create_cluster() {
 install_rhmi() {
     local cluster_id
     local rhmi_name
+    local infra_id
+
     cluster_id=$(get_cluster_id)
 
     echo '{"addon":{"id":"rhmi"}}' | ocm post "/api/clusters_mgmt/v1/clusters/${cluster_id}/addons"
@@ -123,12 +125,19 @@ install_rhmi() {
 
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" patch rhmi "${rhmi_name}" -n ${RHMI_OPERATOR_NAMESPACE} \
         --type "json" -p "[{\"op\": \"replace\", \"path\": \"/spec/useClusterStorage\", \"value\": \"${USE_CLUSTER_STORAGE:-true}\"}]"
-    oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" create secret generic redhat-rhmi-smtp -n "${RHMI_OPERATOR_NAMESPACE}" \
-        --from-literal=host=smtp.example.com \
-        --from-literal=username=dummy \
-        --from-literal=password=dummy \
-        --from-literal=port=587 \
-        --from-literal=tls=true
+
+    # Create a valid SMTP secret if SENDGRID_API_KEY variable is exported
+    if [[ -n "${SENDGRID_API_KEY:-}" ]]; then
+        infra_id=$(get_infra_id)
+        smtp-service create "${infra_id}" | oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" create -n "${RHMI_OPERATOR_NAMESPACE}" -f -
+    else
+        oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" create secret generic redhat-rhmi-smtp -n "${RHMI_OPERATOR_NAMESPACE}" \
+            --from-literal=host=smtp.example.com \
+            --from-literal=username=dummy \
+            --from-literal=password=dummy \
+            --from-literal=port=587 \
+            --from-literal=tls=true
+    fi
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" create secret generic redhat-rhmi-pagerduty -n ${RHMI_OPERATOR_NAMESPACE} \
         --from-literal=serviceKey=dummykey
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" create secret generic redhat-rhmi-deadmanssnitch -n ${RHMI_OPERATOR_NAMESPACE} \
@@ -141,8 +150,19 @@ install_rhmi() {
 delete_cluster() {
     local rhmi_name
     local cluster_id
+    local infra_id
 
     rhmi_name=$(get_rhmi_name || true)
+
+    # Delete SMTP API key if SENDGRID_API_KEY variable is exported
+    if [[ -n "${SENDGRID_API_KEY:-}" ]]; then
+        infra_id=$(get_infra_id)
+        # Check if infra_id is not empty (would happen when the cluster-details.json file is not updated after creating a cluster)
+        if [[ $infra_id ]]; then
+            smtp-service delete "${infra_id}"
+        fi
+    fi
+    
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" delete rhmi "${rhmi_name}" -n "${RHMI_OPERATOR_NAMESPACE}" || true
 
     cluster_id=$(get_cluster_id)
@@ -167,6 +187,11 @@ get_cluster_id() {
 
 get_rhmi_name() {
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" get rhmi -n "${RHMI_OPERATOR_NAMESPACE}" -o jsonpath='{.items[*].metadata.name}'
+}
+
+get_infra_id() {
+    # 'values' function evaluates null as empty string
+    jq -r '.infra_id | values' < "${CLUSTER_DETAILS_FILE}"
 }
 
 send_cluster_create_request() {
