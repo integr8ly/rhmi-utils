@@ -296,6 +296,7 @@ install_rhmi                      - install RHMI using addon-type installation
 ------------------------------------------------------------------------------------------
 Optional exported variables:
 - USE_CLUSTER_STORAGE               true/false - use OpenShift/AWS storage (default: true)
+- SENDGRID_API_KEY                  a token for creating SMTP secret
 ==========================================================================================
 upgrade_cluster                   - upgrade OSD cluster
 ------------------------------------------------------------------------------------------
@@ -303,6 +304,8 @@ Required exported variables:
 - UPGRADE_VERSION                   to get OpenShift versions, run: ocm cluster versions
 ==========================================================================================
 delete_cluster                    - delete RHMI product & OSD cluster
+Optional exported variables:
+- SENDGRID_API_KEY                  a token for creating SMTP secret
 ==========================================================================================
 " "${0}"
 }
