@@ -115,6 +115,7 @@ install_rhmi() {
     local cluster_id
     local rhmi_name
     local infra_id
+    local csv_name
 
     cluster_id=$(get_cluster_id)
 
@@ -127,6 +128,12 @@ install_rhmi() {
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" patch rhmi "${rhmi_name}" -n ${RHMI_OPERATOR_NAMESPACE} \
         --type=merge -p "{\"spec\":{\"useClusterStorage\": \"${USE_CLUSTER_STORAGE:-true}\", \"selfSignedCerts\": ${SELF_SIGNED_CERTS:-true} }}"
 
+    # Change alerting email address is ALERTING_EMAIL_ADDRESS variable is set
+    if [[ -n "${ALERTING_EMAIL_ADDRESS:-}" ]]; then
+        csv_name=$(oc get csv -n ${RHMI_OPERATOR_NAMESPACE} | grep integreatly-operator | awk '{print $1}')
+        oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" patch csv "${csv_name}" -n ${RHMI_OPERATOR_NAMESPACE} \
+            --type=json -p "[{\"op\": \"replace\", \"path\": \"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/4/value\", \"value\": \"${ALERTING_EMAIL_ADDRESS}\" }]"
+    fi
     # Create a valid SMTP secret if SENDGRID_API_KEY variable is exported
     if [[ -n "${SENDGRID_API_KEY:-}" ]]; then
         infra_id=$(get_infra_id)
@@ -302,6 +309,7 @@ install_rhmi                      - install RHMI using addon-type installation
 Optional exported variables:
 - USE_CLUSTER_STORAGE               true/false - use OpenShift/AWS storage (default: true)
 - SENDGRID_API_KEY                  a token for creating SMTP secret
+- ALERTING_EMAIL_ADDRESS            email address for receiving alert notifications
 - SELF_SIGNED_CERTS                 true/false - cluster certificate can be invalid
 ==========================================================================================
 upgrade_cluster                   - upgrade OSD cluster
