@@ -125,7 +125,7 @@ install_rhmi() {
     rhmi_name=$(get_rhmi_name)
 
     oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" patch rhmi "${rhmi_name}" -n ${RHMI_OPERATOR_NAMESPACE} \
-        --type "json" -p "[{\"op\": \"replace\", \"path\": \"/spec/useClusterStorage\", \"value\": \"${USE_CLUSTER_STORAGE:-true}\"}]"
+        --type=merge -p "{\"spec\":{\"useClusterStorage\": \"${USE_CLUSTER_STORAGE:-true}\", \"selfSignedCerts\": ${SELF_SIGNED_CERTS:-true} }}"
 
     # Create a valid SMTP secret if SENDGRID_API_KEY variable is exported
     if [[ -n "${SENDGRID_API_KEY:-}" ]]; then
@@ -302,6 +302,7 @@ install_rhmi                      - install RHMI using addon-type installation
 Optional exported variables:
 - USE_CLUSTER_STORAGE               true/false - use OpenShift/AWS storage (default: true)
 - SENDGRID_API_KEY                  a token for creating SMTP secret
+- SELF_SIGNED_CERTS                 true/false - cluster certificate can be invalid
 ==========================================================================================
 upgrade_cluster                   - upgrade OSD cluster
 ------------------------------------------------------------------------------------------
