@@ -28,6 +28,10 @@ ocm/get/current_account:
 ocm/cluster/list:
 	@${OCM} cluster list
 
+.PHONY: ocm/cluster/logs
+ocm/cluster/logs:
+	@${OCM_SH} get_cluster_logs
+
 .PHONY: ocm/cluster/create
 ocm/cluster/create:
 	@${OCM_SH} create_cluster
