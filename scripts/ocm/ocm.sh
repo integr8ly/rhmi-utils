@@ -13,6 +13,7 @@ readonly CLUSTER_KUBECONFIG_FILE="${OCM_DIR}/cluster.kubeconfig"
 readonly CLUSTER_CONFIGURATION_FILE="${OCM_DIR}/cluster.json"
 readonly CLUSTER_DETAILS_FILE="${OCM_DIR}/cluster-details.json"
 readonly CLUSTER_CREDENTIALS_FILE="${OCM_DIR}/cluster-credentials.json"
+readonly CLUSTER_LOGS_FILE="${OCM_DIR}/cluster.log"
 
 readonly RHMI_OPERATOR_NAMESPACE="redhat-rhmi-operator"
 
@@ -181,6 +182,10 @@ upgrade_cluster() {
     wait_for "ocm get cluster ${cluster_id} | jq -r .openshift_version | grep -q ${UPGRADE_VERSION}" "OpenShift upgrade" "90m" "300"
 }
 
+get_cluster_logs() {
+    ocm get "/api/clusters_mgmt/v1/clusters/$(get_cluster_id)/logs/hive" | jq -r .content | tee "${CLUSTER_LOGS_FILE}"
+}
+
 get_cluster_id() {
     jq -r .id < "${CLUSTER_DETAILS_FILE}"
 }
@@ -307,6 +312,8 @@ delete_cluster                    - delete RHMI product & OSD cluster
 Optional exported variables:
 - SENDGRID_API_KEY                  a token for creating SMTP secret
 ==========================================================================================
+get_cluster_logs                  - get logs from hive and save them to ${CLUSTER_LOGS_FILE}
+==========================================================================================
 " "${0}"
 }
 
@@ -339,6 +346,10 @@ main() {
             ;;
         upgrade_cluster)
             upgrade_cluster
+            exit 0
+            ;;
+        get_cluster_logs)
+            get_cluster_logs
             exit 0
             ;;
         -h | --help)
