@@ -183,6 +183,8 @@ If you want to test your changes on a cluster, the easiest solution would be to 
 * [OCM CLI](https://github.com/openshift-online/ocm-cli/releases)
 * [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 * [jq](https://stedolan.github.io/jq/)
+* :apple: (Mac users) - install `gtimeout` util and create a symbolic link (so it can be referenced as `timeout`): 
+  * `brew install coreutils && sudo ln -s /usr/local/bin/gtimeout /usr/local/bin/timeout`
 
 #### Steps
 
