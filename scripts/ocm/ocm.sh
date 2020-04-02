@@ -20,7 +20,6 @@ readonly RHMI_OPERATOR_NAMESPACE="redhat-rhmi-operator"
 readonly ERROR_MISSING_AWS_ENV_VARS="ERROR: Not all required AWS environment are set. Please make sure you've exported all following env vars:"
 readonly ERROR_MISSING_AWS_JSON="ERROR: ${AWS_CREDENTIALS_FILE} file does not exist. Please run 'make ocm/aws/create_access_key' first"
 readonly ERROR_MISSING_CLUSTER_JSON="ERROR: ${CLUSTER_CONFIGURATION_FILE} file does not exist. Please run 'make ocm/cluster.json' first"
-readonly ERROR_UPGRADE_VERSION_REQUIRED="ERROR: UPGRADE_VERSION variable is not exported. Please specify OpenShift version"
 readonly PROMPT_ACCESS_KEY_LIMIT="WARNING
 Number of access keys for user osdCcsAdmin has reached its limit (2).
 Do you want to delete latest generated key and create a new one? (y/n): "
