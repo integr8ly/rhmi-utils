@@ -180,7 +180,7 @@ upgrade_cluster() {
     local cluster_id
     cluster_id=$(get_cluster_id)
 
-    upgradeAvailable=$(ocm get cluster ${cluster_id} | jq -r .metrics.upgrade.available)
+    upgradeAvailable=$(ocm get cluster "${cluster_id}" | jq -r .metrics.upgrade.available)
     
     if [[ $upgradeAvailable == true ]]; then
         oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" adm upgrade --to-latest=true
