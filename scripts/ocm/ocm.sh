@@ -20,7 +20,6 @@ readonly RHMI_OPERATOR_NAMESPACE="redhat-rhmi-operator"
 readonly ERROR_MISSING_AWS_ENV_VARS="ERROR: Not all required AWS environment are set. Please make sure you've exported all following env vars:"
 readonly ERROR_MISSING_AWS_JSON="ERROR: ${AWS_CREDENTIALS_FILE} file does not exist. Please run 'make ocm/aws/create_access_key' first"
 readonly ERROR_MISSING_CLUSTER_JSON="ERROR: ${CLUSTER_CONFIGURATION_FILE} file does not exist. Please run 'make ocm/cluster.json' first"
-readonly ERROR_UPGRADE_VERSION_REQUIRED="ERROR: UPGRADE_VERSION variable is not exported. Please specify OpenShift version"
 readonly PROMPT_ACCESS_KEY_LIMIT="WARNING
 Number of access keys for user osdCcsAdmin has reached its limit (2).
 Do you want to delete latest generated key and create a new one? (y/n): "
@@ -178,15 +177,18 @@ delete_cluster() {
 }
 
 upgrade_cluster() {
-    if [[ -z "${UPGRADE_VERSION:-}" ]]; then
-        printf "%s\n" "${ERROR_UPGRADE_VERSION_REQUIRED}"
-        exit 1
-    fi
-
     local cluster_id
     cluster_id=$(get_cluster_id)
-    oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" adm upgrade --to "${UPGRADE_VERSION}"
-    wait_for "ocm get cluster ${cluster_id} | jq -r .openshift_version | grep -q ${UPGRADE_VERSION}" "OpenShift upgrade" "90m" "300"
+
+    upgradeAvailable=$(ocm get cluster "${cluster_id}" | jq -r .metrics.upgrade.available)
+    
+    if [[ $upgradeAvailable == true ]]; then
+        oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" adm upgrade --to-latest=true
+        sleep 600 # waiting 10 minutes to allow for '.metrics.upgrade.state' to appear
+        wait_for "ocm get cluster ${cluster_id} | jq -r .metrics.upgrade.state | grep -q completed" "OpenShift upgrade" "90m" "300"
+    else
+        echo "No upgrade available for cluster with id: ${cluster_id}"
+    fi
 }
 
 get_cluster_logs() {
@@ -312,10 +314,7 @@ Optional exported variables:
 - ALERTING_EMAIL_ADDRESS            email address for receiving alert notifications
 - SELF_SIGNED_CERTS                 true/false - cluster certificate can be invalid
 ==========================================================================================
-upgrade_cluster                   - upgrade OSD cluster
-------------------------------------------------------------------------------------------
-Required exported variables:
-- UPGRADE_VERSION                   to get OpenShift versions, run: ocm cluster versions
+upgrade_cluster                   - upgrade OSD cluster to latest version (if available)
 ==========================================================================================
 delete_cluster                    - delete RHMI product & OSD cluster
 Optional exported variables:
