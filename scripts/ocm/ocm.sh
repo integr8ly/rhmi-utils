@@ -140,7 +140,7 @@ install_rhmi() {
 
     # Change alerting email address is ALERTING_EMAIL_ADDRESS variable is set
     if [[ -n "${ALERTING_EMAIL_ADDRESS:-}" ]]; then
-        csv_name=$(oc get csv -n ${RHMI_OPERATOR_NAMESPACE} | grep integreatly-operator | awk '{print $1}')
+        csv_name=$(oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" get csv -n ${RHMI_OPERATOR_NAMESPACE} | grep integreatly-operator | awk '{print $1}')
         oc --kubeconfig "${CLUSTER_KUBECONFIG_FILE}" patch csv "${csv_name}" -n ${RHMI_OPERATOR_NAMESPACE} \
             --type=json -p "[{\"op\": \"replace\", \"path\": \"/spec/install/spec/deployments/0/spec/template/spec/containers/0/env/4/value\", \"value\": \"${ALERTING_EMAIL_ADDRESS}\" }]"
     fi
