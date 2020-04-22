@@ -174,3 +174,7 @@ $ zcat ~/repos/rhmi-utils/samples/xyz.json.gz | jq -f scripts/resources_by_names
 "openshift-webapp",0.002,87613440,,,,,
 "ops-health-monitoring",,,,,,,
 ```
+
+## Using `ocm` for installation of RHMI
+
+The OCM tool has moved to delorean project.You can find the documentation regarding the steps to follow [here](https://github.com/integr8ly/delorean/tree/master/docs/ocm)
