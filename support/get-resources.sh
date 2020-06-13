@@ -1,6 +1,10 @@
 #!/bin/bash
 
-tmpdir=$(mktemp -d)
+if [ ! -z "$1" ]; then
+  tmpdir=$1
+else 
+  tmpdir=$(mktemp -d)
+fi
 svr=$(oc whoami --show-server | sed -e 's|^[^/]*//||' -e 's|/.*$||' | cut -d':' -f1)
 work_file=${tmpdir}/resources.${svr}.$(TZ=UTC date +%Y%m%d_%H%M%SZ).json
 
