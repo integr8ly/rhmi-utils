@@ -34,16 +34,18 @@ The get-resources script is designed to be runnable on any machine where oc is i
 
 ```
 # Run locally from cloned repo
-$ ~/repos/rhmi-utils/support/get-resources.sh
+$ ~/repos/rhmi-utils/support/get-resources.sh <folder/to/save/result>
 Data for api.xyz.openshift.com has been extracted to resources.api.xyz.openshift.com.20191210_193053Z.json.gz
 
 # Run from a master node logged in as system:admin using the latest version without git, scp, etc.
-$ curl https://raw.githubusercontent.com/integr8ly/rhmi-utils/master/support/get-resources.sh | bash
+$ curl https://raw.githubusercontent.com/integr8ly/rhmi-utils/master/support/get-resources.sh <folder/to/save/result> | bash
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  2989  100  2989    0     0   9479      0 --:--:-- --:--:-- --:--:--  9458
 Data for internal.api.xyz.openshift.com has been extracted to resources.internal.api.xyz.openshift.com.20191210_220140Z.json.gz
 ```
+> `<folder/to/save/result>` is optional, if not provided script will save results in the dynamically created folder 
+
 Saving snapshots before and after making a change, performing an upgrade, etc., especially on production RHMI clusters, can be useful when troubleshooting issues, verifying state, and more.  Comparing output files from different clusters and/or different points in time can be useful.  Comparing two uncompressed output files as-is will typically show too many differences to be meaningful without reducing the data into something more targetted using one of the provided jq script files under scripts/ or creating your own.
 
 ### Extracting/Reducing data from a get-resources snapshot file
