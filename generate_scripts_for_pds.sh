@@ -1,3 +1,14 @@
+#!/bin/bash
+
+#
+# This script helps generate the ansible-playbook command lines for running the install,
+# upgrade, and uninstall playbooks against a RHPDS cluster.
+# 
+# When run against a cluster that already has RHMI installed, it will maintain the same
+# passwords that were originally used during the initial install of RHMI.  Otherwise,
+# CHANGEME will be used for all 3.
+#
+
 get_user_password() {
   local USER=$1
   local SECRET=$(oc get secret --no-headers -n sso | awk '{print $1}' | egrep "^${USER}(-user)?-credentials$")
