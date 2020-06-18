@@ -38,6 +38,7 @@ for PLAYBOOK in install uninstall upgrade; do
 	  -e rhsso_evals_admin_password=${CUSTOMER_ADMIN_PASS} \\
 	  -e rhsso_cluster_admin_password=${CLUSTER_ADMIN_PASS} \\
 	  -e gitea=false \\
+    -e backup_restore_install=true \\
 	  -vvv \\
 	  | tee -a /tmp/integreatly-${PLAYBOOK}.log
 EOF
