@@ -6,7 +6,11 @@ else
   tmpdir=$(mktemp -d)
 fi
 svr=$(oc whoami --show-server | sed -e 's|^[^/]*//||' -e 's|/.*$||' | cut -d':' -f1)
-work_file=${tmpdir}/resources.${svr}.$(TZ=UTC date +%Y%m%d_%H%M%SZ).json
+base_name=resources.${svr}.$(TZ=UTC date +%Y%m%d_%H%M%SZ).json
+work_file="${tmpdir}/${base_name}"
+output_file="${PWD}/${base_name}.gz"
+
+echo "Temporary working directory: ${tmpdir}" >&2
 
 cat << EOF > ${work_file}
 [
@@ -77,7 +81,7 @@ cat << EOF > ${work_file}
     },
     {
       "id": "enmasse-crs",
-      "cmd": "(oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}' | egrep -v '^(addressspaceschemas|addresses)$') | sed 's/ /,/g') --all-namespaces  -o json; oc get addressspaceschemas -o json) | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
+      "cmd": "oc get $(echo $(oc api-resources | grep enmasse | awk '{print $1}') | sed 's/ /,/g') --all-namespaces -o json | jq 'reduce inputs as \$i (.; .items += \$i.items)'",
       "type": "json"
     },
     {
@@ -103,8 +107,7 @@ for i in ${tmpdir}/*.json; do
   cat ${work_file} | jq --arg id $(basename $i .json) --slurpfile x $i '[.[] | select(.id==$id).result=$x[]]' > $work_file.tmp && cp $work_file.tmp ${work_file} && rm $work_file.tmp
 done
 
-#rm -r ${tmpdir}
+gzip ${work_file} --suffix=.gz -c > ${output_file} && rm ${work_file}
 
-gzip ${work_file} --suffix=.gz
+echo "Data for ${svr} has been extracted to ${output_file}"
 
-echo "Data for ${svr} has been extracted to ${work_file}.gz"
