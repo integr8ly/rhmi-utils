@@ -86,7 +86,6 @@ def getPodResources:
     } | {
       ns,
       pod,
-      type: (.labels."syndesis.io/type" // .labels?.infraType // ""),
       labels,
       container: .containers.name,
       requests: .containers.resources.requests | i8::normalizeResources,
