@@ -4,7 +4,7 @@ module {
   "homepage": "https://github.com/integr8ly/rhmi-utils#readme",
   "license": "Apache",
   "author": "Jesse Sarnovsky",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "jq": "1.6",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@ module {
   }
 };
 
-import "i8-helpers" as i8;
+import "i8-helpers" as i8 {"search": ["../../lib/jq"]};
 
 def getNamespaceClasses:
   [
