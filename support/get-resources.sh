@@ -104,7 +104,11 @@ for i in ${tmpdir}/*.raw; do
 done
 
 for i in ${tmpdir}/*.json; do
-  cat ${work_file} | jq --arg id $(basename $i .json) --slurpfile x $i '[.[] | select(.id==$id).result=$x[]]' > $work_file.tmp && cp $work_file.tmp ${work_file} && rm $work_file.tmp
+  if [ -s "$i" ]; then
+    cat ${work_file} | jq --arg id $(basename $i .json) --slurpfile x $i '[.[] | select(.id==$id).result=$x[]]' > $work_file.tmp && cp $work_file.tmp ${work_file} && rm $work_file.tmp
+  else
+    echo "Ignoring empty $i file"
+  fi
 done
 
 gzip ${work_file} --suffix=.gz -c > ${output_file} && rm ${work_file}
