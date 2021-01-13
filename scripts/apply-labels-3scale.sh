@@ -4,7 +4,7 @@
 THREESCALE_COMPONENT=threescale_component 
 THREESCALE_COMPONENT_ELEMENT=threescale_component_element
 
-oc project 3scale
+oc project openshift-3scale || oc project 3scale
 
 # Adding the threescale_component label
 for COMPONENT in apicast backend system zync
@@ -65,8 +65,8 @@ do
             oc label imagestream amp-zync $THREESCALE_COMPONENT=zync
             oc label imagestream zync-database-postgresql $THREESCALE_COMPONENT=system
         else
-            echo Label $THREESCALE_COMPONENT=$COMPONENT added to secret $SECRET
-            oc label secret $SECRET $THREESCALE_COMPONENT=$COMPONENT
+            echo Label $THREESCALE_COMPONENT=$COMPONENT added to imagestream $IMAGESTREAM
+            oc label imagestream $IMAGESTREAM $THREESCALE_COMPONENT=$COMPONENT
         fi
     done
     for IMAGESTREAMTAG in in $(oc get imagestreamtag | grep $COMPONENT | awk '{print $1}')
@@ -84,8 +84,8 @@ do
             oc label imagestreamtag zync-database-postgresql:2.9 $THREESCALE_COMPONENT=system
             oc label imagestreamtag zync-database-postgresql:latest $THREESCALE_COMPONENT=system
         else
-            echo Label $THREESCALE_COMPONENT=$COMPONENT added to secret $SECRET
-            oc label secret $SECRET $THREESCALE_COMPONENT=$COMPONENT
+            echo Label $THREESCALE_COMPONENT=$COMPONENT added to imagestreamtag $IMAGESTREAMTAG
+            oc label imagestreamtag $IMAGESTREAMTAG $THREESCALE_COMPONENT=$COMPONENT
         fi
     done
 
@@ -144,22 +144,22 @@ do
 done
 
 # Only one secret needs relabling 
-oc lable secret system-smtp $THREESCALE_COMPONENT_ELEMENT=smtp
+oc label secret system-smtp $THREESCALE_COMPONENT_ELEMENT=smtp
 
 # Endpoints mostly one offs
 # Endpoints:  system-developer:  map[app:3scale-api-management threescale_component:system threescale_component_element:developer-ui]
 # Endpoints:  system-master:  map[app:3scale-api-management threescale_component:system threescale_component_element:master-ui]
 # Endpoints:  system-provider:  map[app:3scale-api-management threescale_component:system threescale_component_element:provider-ui]
 
-oc lable endpoints system-developer $THREESCALE_COMPONENT_ELEMENT=developer-ui
-oc lable endpoints system-master $THREESCALE_COMPONENT_ELEMENT=master-ui
-oc lable endpoints system-provider $THREESCALE_COMPONENT_ELEMENT=provider-ui
+oc label endpoints system-developer $THREESCALE_COMPONENT_ELEMENT=developer-ui
+oc label endpoints system-master $THREESCALE_COMPONENT_ELEMENT=master-ui
+oc label endpoints system-provider $THREESCALE_COMPONENT_ELEMENT=provider-ui
 
 # Services mostly one offs
 # Service:  system-developer:  map[app:3scale-api-management threescale_component:system threescale_component_element:developer-ui]
 # Service:  system-master:  map[app:3scale-api-management threescale_component:system threescale_component_element:master-ui]
 # Service:  system-provider:  map[app:3scale-api-management threescale_component:system threescale_component_element:provider-ui]
 
-oc lable service system-developer $THREESCALE_COMPONENT_ELEMENT=developer-ui
-oc lable service system-master $THREESCALE_COMPONENT_ELEMENT=master-ui
-oc lable service system-provider $THREESCALE_COMPONENT_ELEMENT=provider-ui
+oc label service system-developer $THREESCALE_COMPONENT_ELEMENT=developer-ui
+oc label service system-master $THREESCALE_COMPONENT_ELEMENT=master-ui
+oc label service system-provider $THREESCALE_COMPONENT_ELEMENT=provider-ui
