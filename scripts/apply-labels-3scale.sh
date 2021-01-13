@@ -4,7 +4,7 @@
 THREESCALE_COMPONENT=threescale_component 
 THREESCALE_COMPONENT_ELEMENT=threescale_component_element
 
-oc project openshift-3scale
+oc project 3scale
 
 # Adding the threescale_component label
 for COMPONENT in apicast backend system zync
