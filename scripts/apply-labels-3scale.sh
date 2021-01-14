@@ -53,6 +53,10 @@ do
         then 
             echo Label $THREESCALE_COMPONENT=zync added to secret zync
             oc label secret zync $THREESCALE_COMPONENT=zync
+        elif [ $SECRET == system-master-apicast ]
+        then
+            echo Label $THREESCALE_COMPONENT=system added to secret system-master-apicast
+            oc label secret system-master-apicast $THREESCALE_COMPONENT=system
         else
             echo Label $THREESCALE_COMPONENT=$COMPONENT added to secret $SECRET
             oc label secret $SECRET $THREESCALE_COMPONENT=$COMPONENT
