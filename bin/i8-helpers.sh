@@ -1,17 +1,5 @@
 #!/usr/bin/env sh
 
-# Try to execute a `return` statement,
-# but do it in a sub-shell and catch the results.
-# If this script isn't sourced, that will raise an error.
-$(return >/dev/null 2>&1)
-
-# What exit code did that give?
-if [ "$?" -ne "0" ]; then
-  echo "This script is not sourced."
-  echo "This file must be sourced in order to load and use the shell functions contained within."
-  exit
-fi
-
 #
 # Basic helpers
 #
